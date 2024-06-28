@@ -1,0 +1,59 @@
+﻿@page "/"
+@using AppInfos = Appotara.Models.AppInfos;
+
+<div class="h-full flex flex-row bg-zinc-700">
+
+    @* Left Side Menu *@
+    <div class="w-1/5 h-full border-r-2 border-orange-400">
+    </div>
+
+    @* Right Content *@
+    <div class="w-4/5 h-full p-6">
+
+        @* Paths Container *@
+        <div class="h-5/6 flex flex-col justify-between">
+
+            @* Paths List *@
+            <div class="h-5/6 pr-4 flex flex-col justify-normal gap-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-400 scrollbar-track-orange-300">
+            @foreach (AppInfos app in selectedApps)
+            {
+                    <div class="px-3 py-1 text-zinc-200 border-2 border-zinc-200 border-dashed rounded-md flex flex-row justify-between">
+                        <span class="overflow-hidden text-ellipsis whitespace-nowrap">
+                            @app.Path
+                        </span>
+                        <span class="px-2 text-red-700 font-bold cursor-pointer" @onclick="() => RemovePath(app)">
+                            X
+                        </span>
+                    </div>
+            }
+            </div>
+
+            @* AddFile Button *@
+            <div class="text-center pt-3">
+                <button class="p-2 font-bold text-orange-950 bg-orange-300 rounded-full hover:bg-orange-400 active:bg-orange-500 active:outline-none active:ring active:ring-orange-200" @onclick="OpenAppSelector">Check Installed apps</button>
+            </div>
+        </div>
+
+        @* Shortcut Creation Container *@
+        <div class="h-1/6 flex flex-row items-end justify-between">
+
+            @* Shortcut Name *@
+            <div class="grow text-center">
+                <input type="text" @bind="shortcutName" @bind:event="oninput" name="shortcutName" maxlength="250" placeholder="Shortcut's name" class="w-4/5 px-3 py-1 rounded-full bg-zinc-200" />
+            </div>
+
+            @* Shorcut Creation Button *@
+            <div>
+                @if(shortcutName != "")
+                {
+                    <button class="p-2 font-bold text-orange-950 bg-orange-300 rounded-full hover:bg-orange-400 active:bg-orange-500 active:outline-none active:ring active:ring-orange-200" @onclick="CreateShortcut">Create Shortcut</button>
+                }else{
+                    <button class="p-2 font-bold text-orange-950 bg-orange-300 rounded-full cursor-not-allowed opacity-50" disabled>Create Shortcut</button>
+                }
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<InstalledApps OnSelectedAppsValidate="HandleSelectedApps" IsVisible=isSelectorVisible/>

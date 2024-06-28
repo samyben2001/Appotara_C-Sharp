@@ -1,0 +1,38 @@
+﻿@page "/installedApps"
+@using AppInfos = Appotara.Models.AppInfos;
+d
+<div class="h-full w-full absolute top-0 left-0 flex justify-center bg-zinc-700 bg-opacity-75" style="@(IsVisible ?"display: flex":"display: none" )">
+    <div class="h-5/6 w-5/6 flex flex-col self-center bg-zinc-500">
+        <div class="h-8 w-full flex flex-col border-b-2 border-zinc-300">
+            <span class="self-end pr-2 cursor-pointer" @onclick="CloseSelector">X</span>
+        </div>
+
+        <div class="h-[calc(100%-7rem)] w-full overflow-y-auto">
+
+            @foreach (AppInfos app in installedApps)
+            {
+                <div>
+                   <span class="w-1/12 p-2">
+                        <input type="checkbox"
+                               id="@app.Name"
+                               name="@app.Name"
+                               value="@app.Path" @onclick="() => AddOrRemovePath(app)" />
+                   </span>
+
+                    <span class="w-3/12 overflow-x-hidden text-ellipsis">
+                        @app.Name
+                    </span>
+
+                    <span class="w-8/12 px-4 overflow-x-hidden text-ellipsis">
+                        @app.Path
+                    </span>
+                </div>
+            }
+        </div>
+
+        <div class="h-20 w-full flex flex-col border-t-2 border-zinc-300">
+            <button @onclick=ValidatePath>OK</button>
+            <button @onclick=BrowseApp>Browse...</button>
+        </div>
+    </div>
+</div>
