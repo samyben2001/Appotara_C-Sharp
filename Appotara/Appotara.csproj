@@ -94,4 +94,8 @@
       <Folder Include="Services\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Include="wwwroot\js\InstalledApps.js" />
+    </ItemGroup>
+
 </Project>

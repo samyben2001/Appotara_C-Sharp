@@ -17,11 +17,16 @@
             <div class="h-5/6 pr-4 flex flex-col justify-normal gap-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-400 scrollbar-track-orange-300">
             @foreach (AppInfos app in selectedApps)
             {
-                    <div class="px-3 py-1 text-zinc-200 border-2 border-zinc-200 border-dashed rounded-md flex flex-row justify-between">
-                        <span class="overflow-hidden text-ellipsis whitespace-nowrap">
+                    <div class="px-3 py-1 text-zinc-200 border-2 border-zinc-200 border-dashed rounded-md flex flex-row gap-x-4">
+                        <span class="appName overflow-hidden text-ellipsis whitespace-nowrap font-bold w-2/12">
+                            @app.Name
+                        </span>
+
+                        <span class="overflow-hidden text-ellipsis whitespace-nowrap flex-grow">
                             @app.Path
                         </span>
-                        <span class="px-2 text-red-700 font-bold cursor-pointer" @onclick="() => RemovePath(app)">
+
+                        <span class="text-red-700 text-right font-bold cursor-pointer w-fit self-end" @onclick="() => RemovePath(app)">
                             X
                         </span>
                     </div>

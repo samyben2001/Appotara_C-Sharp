@@ -2,11 +2,15 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.WindowsAPICodePack.Shell;
 using AppInfos = Appotara.Models.AppInfos;
+using Microsoft.JSInterop;
 
 namespace Appotara.Components.Pages
 {
     public partial class InstalledApps
     {
+        [Inject]
+        IJSRuntime JSRuntime { get; set; }
+
         List<AppInfos> installedApps = new List<AppInfos>();
         List<AppInfos> selectedApps = new List<AppInfos>();
 
@@ -21,6 +25,8 @@ namespace Appotara.Components.Pages
                 }
                 else
                 {
+                    CallJsMethodToUncheckCheckboxes();
+                    selectedApps = new List<AppInfos>();
                     isVisible = false;
                 }
             }
@@ -33,6 +39,11 @@ namespace Appotara.Components.Pages
         {
             IsVisible = false;
             GetInstalledApps();
+        }
+
+        private async Task CallJsMethodToUncheckCheckboxes()
+        {
+            await JSRuntime.InvokeVoidAsync("disableCheckBoxes");
         }
 
         //Get the applications insalled on Windows from shell:appsFolder

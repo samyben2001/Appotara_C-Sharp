@@ -47,7 +47,12 @@ namespace Appotara.Components.Pages
         private void HandleSelectedApps(List<AppInfos> apps)
         {
             isSelectorVisible = false;
-            selectedApps = apps;
+            apps.ForEach(app => { 
+                if (!selectedApps.Contains(app))
+                {
+                    selectedApps.Add(app);
+                }
+            });
         }
 
         private void CreateShortcut()
