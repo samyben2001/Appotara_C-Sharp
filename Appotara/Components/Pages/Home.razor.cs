@@ -58,7 +58,7 @@ namespace Appotara.Components.Pages
         private void CreateShortcut()
         {
             //create content for bat script
-            string batchScript = "";
+            string batchScript = "@echo off" + Environment.NewLine;
 
             foreach (AppInfos app in selectedApps)
             {
@@ -77,6 +77,8 @@ namespace Appotara.Components.Pages
             shortcut.Description = "";
             shortcut.TargetPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + dirPath + @$"\{shortcutName}.bat";
             shortcut.Save();
+
+            //TODO: Alert 'Shortcut Created' and clear selectedApps
         }
 
         //remove path from list

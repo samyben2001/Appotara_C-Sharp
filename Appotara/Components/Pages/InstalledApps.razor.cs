@@ -1,4 +1,8 @@
-﻿using System.Drawing;
+﻿using System.IO;
+using System.Drawing;
+using Color = System.Drawing.Color;
+using System.Drawing.Imaging;
+using ImageFormat = System.Drawing.Imaging.ImageFormat;
 using Microsoft.AspNetCore.Components;
 using Microsoft.WindowsAPICodePack.Shell;
 using AppInfos = Appotara.Models.AppInfos;
@@ -55,18 +59,22 @@ namespace Appotara.Components.Pages
 
             foreach (var app in (IKnownFolder)appsFolder)
             {
-                AppInfos appInfo = new AppInfos();
+                string appPath = app.Properties.System.Link.TargetParsingPath.Value;
+                if (appPath is not null && appPath.Contains(".exe") && !appPath.Contains("\\Windows\\"))
+                {
+                    AppInfos appInfo = new AppInfos();
 
-                // The friendly app name
-                appInfo.Name = app.Name;
-                // The ParsingName property is the AppUserModelID
-                string appUserModelID = app.ParsingName; // or app.Properties.System.AppUserModel.ID
-                                                         // You can even get the Jumbo icon in one shot
-                //The path of the app
-                appInfo.Path = app.Properties.System.Link.TargetParsingPath.Value;
-                installedApps.Add(appInfo);
+                    // The friendly app name
+                    appInfo.Name = app.Name;
+                    // The ParsingName property is the AppUserModelID
+                    string appUserModelID = app.ParsingName; // or app.Properties.System.AppUserModel.ID
+                                                             // You can even get the Jumbo icon in one shot
+                                                             //The path of the app
+                    appInfo.Path = app.Properties.System.Link.TargetParsingPath.Value;
+                    installedApps.Add(appInfo);
 
-                Icon icon = app.Thumbnail.Icon; //OR ImageSource icon = app.Thumbnail.BitmapSource;
+                    appInfo.Icon = turnImageToByteArray(app.Thumbnail.Icon); //OR ImageSource icon = app.Thumbnail.BitmapSource;
+                }
             }
         }
 
@@ -89,12 +97,13 @@ namespace Appotara.Components.Pages
             if (result is not null)
             {
                 AppInfos app = new AppInfos();
-                app.Path = result.FullPath; //TODO: check if fullpath and filename are same than shell
-                app.Name= result.FileName;
+                app.Path = result.FullPath;
+                app.Name = Path.GetFileNameWithoutExtension(result.FileName);
                 //check if path not already selected
                 if (!selectedApps.Contains(app))
                 {
                     selectedApps.Add(app);
+                    ValidatePath();
                 }
                 else
                 {
@@ -110,7 +119,24 @@ namespace Appotara.Components.Pages
 
         private void CloseSelector()
         {
+            //TODO: make a validation alert if selectedApps not empty
             IsVisible = false;
+        }
+
+        private string turnImageToByteArray(System.Drawing.Icon img)
+        {
+            // Convert the icon to a Bitmap object
+            Bitmap bitmap = img.ToBitmap();
+            bitmap.MakeTransparent(bitmap.GetPixel(0, 0));
+
+
+            // Save the bitmap as a PNG file
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                bitmap.Save(memoryStream, ImageFormat.Png);
+
+                return Convert.ToBase64String(memoryStream.ToArray());
+            }
         }
     }
 }
