@@ -71,10 +71,11 @@ namespace Appotara.Components.Pages
                                                              // You can even get the Jumbo icon in one shot
                                                              //The path of the app
                     appInfo.Path = app.Properties.System.Link.TargetParsingPath.Value;
-                    installedApps.Add(appInfo);
-
                     appInfo.Icon = turnImageToByteArray(app.Thumbnail.Icon); //OR ImageSource icon = app.Thumbnail.BitmapSource;
+
+                    installedApps.Add(appInfo);
                 }
+                Console.WriteLine(installedApps);
             }
         }
 
@@ -130,7 +131,7 @@ namespace Appotara.Components.Pages
             bitmap.MakeTransparent(bitmap.GetPixel(0, 0));
 
 
-            // Save the bitmap as a PNG file
+            // Save the bitmap as a PNG file and convert in base64
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 bitmap.Save(memoryStream, ImageFormat.Png);

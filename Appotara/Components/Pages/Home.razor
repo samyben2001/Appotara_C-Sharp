@@ -6,6 +6,7 @@
     @* Left Side Menu *@
     <div class="w-1/5 h-full border-r-2 border-orange-400">
         @* TODO: Create component "ShortuctHistory" *@
+        <ShortcutHistory OnSeeShortcutDetail="ShowShortcutDetail"/>
     </div>
 
     @* Right Content *@
@@ -21,7 +22,7 @@
                     <div class="px-3 py-2 text-zinc-200 border-2 border-zinc-200 border-dashed rounded-md flex flex-row items-center gap-x-4">
                         <span class="appName overflow-hidden text-ellipsis whitespace-nowrap w-3/12">
                             @if(app.Icon is not null){
-                                <img src="@("data:image/png;base64," + app.Icon)" alt="@("icon " + app.Name)" class="h-8 aspect-1 inline-block" />
+                                <img src="@("data:image/png;base64," + app.Icon)" alt="@(app.Name + " Icon")" class="h-8 aspect-1 inline-block" />
                             }
                             <span class="pl-2 font-bold">@app.Name</span>
                         </span>

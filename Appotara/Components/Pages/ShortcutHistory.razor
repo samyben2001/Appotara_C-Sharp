@@ -1,1 +1,12 @@
-﻿<h3>ShortcutHistory</h3>
+﻿@page "/shortcutHistory"
+@using Appotara.Models;
+
+<div class="flex flex-col gap-y-2">
+    @foreach (ShortcutCreated shortcut in allShortcuts)
+    {
+        <div class="w-full text-center text-zinc-200 font-bold hover:bg-zinc-500 cursor-pointer" @onclick="() => SeeShortcutDetail(shortcut)">
+            @shortcut.Name
+        </div>
+    }    
+</div>
+    

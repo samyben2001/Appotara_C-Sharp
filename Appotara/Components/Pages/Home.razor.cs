@@ -1,17 +1,24 @@
-﻿using IWshRuntimeLibrary;
+﻿using Appotara.Models;
+using IWshRuntimeLibrary;
 using Microsoft.AspNetCore.Components;
+using System.Text.Json;
+using File = System.IO.File;
 using AppInfos = Appotara.Models.AppInfos;
+using Microsoft.JSInterop;
 
 
 namespace Appotara.Components.Pages
 {
     public partial class Home
     {
+        [Inject]
+        IJSRuntime JSRuntime { get; set; }
+
         string? shortcutName = "";
         bool isSelectorVisible = false;
 
         List<AppInfos> selectedApps = new List<AppInfos>();
-        List<string> createdShortchuts = new List<string>();
+        List<string> createdShortchuts = new List<string>(); 
 
 
         string basePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
@@ -47,7 +54,8 @@ namespace Appotara.Components.Pages
         private void HandleSelectedApps(List<AppInfos> apps)
         {
             isSelectorVisible = false;
-            apps.ForEach(app => { 
+            apps.ForEach(app =>
+            {
                 if (!selectedApps.Contains(app))
                 {
                     selectedApps.Add(app);
@@ -55,30 +63,11 @@ namespace Appotara.Components.Pages
             });
         }
 
-        private void CreateShortcut()
+        private void ShowShortcutDetail(ShortcutCreated shortcut)
         {
-            //create content for bat script
-            string batchScript = "@echo off" + Environment.NewLine;
-
-            foreach (AppInfos app in selectedApps)
-            {
-                batchScript += @$"START """" ""{app.Path}"" {Environment.NewLine}";
-            }
-
-            //create directory and bat file
-            CreateDir(basePath + dirPath);
-            CreateBatFile(basePath + dirPath + @$"\{ shortcutName}.bat", batchScript);
-
-            //Create shortcut on desktop to bat file
-            object shDesktop = (object)"Desktop";
-            WshShell shell = new WshShell();
-            string shortcutAddress = (string)shell.SpecialFolders.Item(ref shDesktop) + @$"\{shortcutName}.lnk";
-            IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
-            shortcut.Description = "";
-            shortcut.TargetPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + dirPath + @$"\{shortcutName}.bat";
-            shortcut.Save();
-
-            //TODO: Alert 'Shortcut Created' and clear selectedApps
+            Console.WriteLine(shortcut);
+            shortcutName = shortcut.Name;
+            selectedApps = shortcut.Apps;
         }
 
         //remove path from list
@@ -94,7 +83,7 @@ namespace Appotara.Components.Pages
             {
                 // Determine whether the directory exists.
                 if (!Directory.Exists(path))
-                { 
+                {
                     // Try to create the directory.
                     DirectoryInfo di = Directory.CreateDirectory(path);
                 }
@@ -106,17 +95,91 @@ namespace Appotara.Components.Pages
             finally { }
         }
 
-        //create bat file
-        private void CreateBatFile(string path, string content)
+        //create batch file
+        private void CreateFile(string path, object content)
         {
-            if (!System.IO.File.Exists(path))
+            try
             {
-                // Create a file to write to.
-                using (StreamWriter sw = System.IO.File.CreateText(path))
+                if (!File.Exists(path))
                 {
-                    sw.WriteLine(content);
+                    if (path.Contains(".json"))
+                    {
+                        content = JsonSerializer.Serialize((List<ShortcutCreated>)content);
+                    }
+                        // Create a file to write to.
+                        using (StreamWriter sw = File.CreateText(path))
+                    {
+                        sw.WriteLine(content);
+                    }
+                }
+                else
+                {
+                    if (path.Contains(".json"))
+                    {
+                        string jsonString = File.ReadAllText(path);
+                        List<ShortcutCreated> allShortcuts = JsonSerializer.Deserialize<List<ShortcutCreated>>(jsonString)!;
+                        allShortcuts.AddRange((List<ShortcutCreated>)content);
+
+                        using (StreamWriter sw = File.CreateText(path))
+                        {
+                            sw.WriteLine(JsonSerializer.Serialize(allShortcuts));
+                        }
+                    }
                 }
             }
+            catch (Exception e)
+            {
+                Console.WriteLine("The process failed: {0}", e.ToString());
+            }
+            finally { }
+        }
+
+        private void CreateShortcut()
+        {
+            //create content for batch script
+            string batchScript = "@echo off" + Environment.NewLine;
+
+            foreach (AppInfos app in selectedApps)
+            {
+                batchScript += @$"START """" ""{app.Path}"" {Environment.NewLine}";
+            }
+
+            //create directory and batch file
+            CreateDir(basePath + dirPath);
+            CreateFile(basePath + dirPath + @$"\{shortcutName}.bat", batchScript);
+            try
+            {
+                //Create shortcut on desktop to batch file
+                object shDesktop = (object)"Desktop";
+                WshShell shell = new WshShell();
+                string shortcutAddress = (string)shell.SpecialFolders.Item(ref shDesktop) + @$"\{shortcutName}.lnk";
+                IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
+                shortcut.Description = "";
+                shortcut.TargetPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + dirPath + @$"\{shortcutName}.bat";
+                shortcut.Save();
+
+                ShortcutCreated shortcutCreated = new ShortcutCreated();
+                shortcutCreated.Name = shortcutName!;
+                shortcutCreated.Apps = selectedApps;
+                shortcutCreated.BatchScript = batchScript;
+
+                List<ShortcutCreated> shortcutCreatedList = [shortcutCreated];
+                CreateFile(basePath + dirPath + @$"\shortcutHistory.json", shortcutCreatedList);
+
+                shortcutName = "";
+                selectedApps = new List<AppInfos>();
+                CallAlert("Shortcut Created");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("The process failed: {0}", e.ToString());
+            }
+            finally { }
+        }
+
+        private async Task CallAlert(string message)
+        {
+            await JSRuntime.InvokeVoidAsync("CallAlert", message);
         }
 
     }
