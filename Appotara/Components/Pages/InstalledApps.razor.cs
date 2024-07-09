@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.WindowsAPICodePack.Shell;
 using AppInfos = Appotara.Models.AppInfos;
 using Microsoft.JSInterop;
+using Blazored.Modal.Services;
+using Blazored.Modal;
 
 namespace Appotara.Components.Pages
 {
@@ -29,7 +31,8 @@ namespace Appotara.Components.Pages
                 }
                 else
                 {
-                    CallJsMethodToUncheckCheckboxes();
+                    if (selectedApps.Count > 0)
+                        CallJsMethodToUncheckCheckboxes();
                     selectedApps = new List<AppInfos>();
                     isVisible = false;
                 }
@@ -38,6 +41,8 @@ namespace Appotara.Components.Pages
 
         [Parameter]
         public EventCallback<List<AppInfos>> OnSelectedAppsValidate { get; set; }
+
+        [CascadingParameter] public IModalService Modal { get; set; } = default!;
 
         protected override void OnInitialized()
         {
@@ -75,7 +80,6 @@ namespace Appotara.Components.Pages
 
                     installedApps.Add(appInfo);
                 }
-                Console.WriteLine(installedApps);
             }
         }
 
@@ -108,7 +112,7 @@ namespace Appotara.Components.Pages
                 }
                 else
                 {
-                   //TODO: make an alert: app already selected
+                    toastService.ShowError("You have already select this application");
                 }
             }
         }
@@ -118,9 +122,40 @@ namespace Appotara.Components.Pages
             OnSelectedAppsValidate.InvokeAsync(selectedApps);
         }
 
+        private async Task ShowModal()
+        {
+            // call confirm modal if selectedApps not empty
+            if (selectedApps.Count > 0)
+            {
+                var options = new ModalOptions
+                {
+                    UseCustomLayout = true
+                };
+
+                var parameters = new ModalParameters()
+                    .Add(nameof(ConfirmDialog.Title), "You have some applications selected!")
+                    .Add(nameof(ConfirmDialog.Message), "Exit anyway?");
+
+                var mod = Modal.Show<ConfirmDialog>(parameters, options);
+                var result = await mod.Result;
+
+                if (result.Cancelled)
+                {
+                    Console.WriteLine("Modal was cancelled");
+                }
+                else if (result.Confirmed)
+                {
+                    CloseSelector();
+                }
+            }
+            else
+            {
+                CloseSelector();
+            }
+        }
+
         private void CloseSelector()
         {
-            //TODO: make a validation alert if selectedApps not empty
             IsVisible = false;
         }
 

@@ -1,10 +1,10 @@
 ﻿@page "/installedApps"
 @using AppInfos = Appotara.Models.AppInfos;
 
-<div class="h-full w-full absolute top-0 left-0 flex justify-center bg-zinc-800 bg-opacity-75" style="@(IsVisible ?"display: flex":"display: none" )">
+<div class="h-full w-full absolute top-0 left-0 flex justify-center bg-zinc-800 bg-opacity-75 z-20" style="@(IsVisible ?"display: flex":"display: none" )">
     <div class="h-5/6 w-5/6 flex flex-col self-center bg-zinc-800 rounded-lg">
         <div class="h-8 w-full flex flex-col justify-center border-b-2 border-zinc-300">
-            <span class="self-end pr-2 text-orange-400 cursor-pointer" @onclick="CloseSelector">X</span>
+            <span class="self-end pr-2 text-orange-400 cursor-pointer" @onclick="ShowModal">&times;</span>
         </div>
 
         <div class="h-[calc(100%-7rem)] w-full flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-orange-400 scrollbar-track-orange-300">

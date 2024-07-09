@@ -1,11 +1,11 @@
 ﻿@page "/"
 @using AppInfos = Appotara.Models.AppInfos;
 
+
 <div class="h-full flex flex-row bg-zinc-700">
 
     @* Left Side Menu *@
     <div class="w-1/5 h-full border-r-2 border-orange-400">
-        @* TODO: Create component "ShortuctHistory" *@
         <ShortcutHistory OnSeeShortcutDetail="ShowShortcutDetail"/>
     </div>
 
@@ -36,6 +36,7 @@
                         </span>
                     </div>
             }
+
             </div>
 
             @* AddFile Button *@

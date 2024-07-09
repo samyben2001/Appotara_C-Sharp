@@ -5,6 +5,7 @@ using System.Text.Json;
 using File = System.IO.File;
 using AppInfos = Appotara.Models.AppInfos;
 using Microsoft.JSInterop;
+using Blazored.Toast.Services;
 
 
 namespace Appotara.Components.Pages
@@ -14,11 +15,12 @@ namespace Appotara.Components.Pages
         [Inject]
         IJSRuntime JSRuntime { get; set; }
 
+
         string? shortcutName = "";
         bool isSelectorVisible = false;
 
         List<AppInfos> selectedApps = new List<AppInfos>();
-        List<string> createdShortchuts = new List<string>(); 
+        List<string> createdShortchuts = new List<string>();
 
 
         string basePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
@@ -106,8 +108,8 @@ namespace Appotara.Components.Pages
                     {
                         content = JsonSerializer.Serialize((List<ShortcutCreated>)content);
                     }
-                        // Create a file to write to.
-                        using (StreamWriter sw = File.CreateText(path))
+                    // Create a file to write to.
+                    using (StreamWriter sw = File.CreateText(path))
                     {
                         sw.WriteLine(content);
                     }
@@ -168,18 +170,14 @@ namespace Appotara.Components.Pages
 
                 shortcutName = "";
                 selectedApps = new List<AppInfos>();
-                CallAlert("Shortcut Created");
+
+                toastService.ShowSuccess("Shortcut created on Desktop");
             }
             catch (Exception e)
             {
                 Console.WriteLine("The process failed: {0}", e.ToString());
             }
             finally { }
-        }
-
-        private async Task CallAlert(string message)
-        {
-            await JSRuntime.InvokeVoidAsync("CallAlert", message);
         }
 
     }

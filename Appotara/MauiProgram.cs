@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Blazored.Modal;
+using Blazored.Toast;
+using Microsoft.Extensions.Logging;
 
 namespace Appotara
 {
@@ -15,9 +17,11 @@ namespace Appotara
                 });
 
             builder.Services.AddMauiBlazorWebView();
+            builder.Services.AddBlazoredToast();
+            builder.Services.AddBlazoredModal();
 
 #if DEBUG
-    		builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Services.AddBlazorWebViewDeveloperTools();
     		builder.Logging.AddDebug();
 #endif
 

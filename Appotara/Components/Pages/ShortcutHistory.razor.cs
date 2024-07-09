@@ -31,6 +31,7 @@ namespace Appotara.Components.Pages
 
         private void SeeShortcutDetail(ShortcutCreated shortcut)
         {
+            //TODO: need fix installed app show on click
             OnSeeShortcutDetail.InvokeAsync(shortcut);
         }
     }
