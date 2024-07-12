@@ -1,14 +1,11 @@
-﻿using System.IO;
-using System.Drawing;
-using Color = System.Drawing.Color;
-using System.Drawing.Imaging;
-using ImageFormat = System.Drawing.Imaging.ImageFormat;
-using Microsoft.AspNetCore.Components;
-using Microsoft.WindowsAPICodePack.Shell;
-using AppInfos = Appotara.Models.AppInfos;
-using Microsoft.JSInterop;
+﻿using Blazored.Modal;
 using Blazored.Modal.Services;
-using Blazored.Modal;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+using Microsoft.WindowsAPICodePack.Shell;
+using System.Drawing;
+using AppInfos = Appotara.Models.AppInfos;
+using ImageFormat = System.Drawing.Imaging.ImageFormat;
 
 namespace Appotara.Components.Pages
 {
@@ -22,7 +19,8 @@ namespace Appotara.Components.Pages
 
         private bool isVisible;
         [Parameter]
-        public bool IsVisible { 
+        public bool IsVisible
+        {
             get { return isVisible; } 
             set {
                 if (value)
@@ -41,6 +39,9 @@ namespace Appotara.Components.Pages
 
         [Parameter]
         public EventCallback<List<AppInfos>> OnSelectedAppsValidate { get; set; }
+
+        [Parameter]
+        public EventCallback<List<AppInfos>> OnClosed { get; set; }
 
         [CascadingParameter] public IModalService Modal { get; set; } = default!;
 
@@ -105,6 +106,7 @@ namespace Appotara.Components.Pages
                 app.Path = result.FullPath;
                 app.Name = Path.GetFileNameWithoutExtension(result.FileName);
                 //check if path not already selected
+                //TODO: check on app.Path
                 if (!selectedApps.Contains(app))
                 {
                     selectedApps.Add(app);
@@ -120,6 +122,7 @@ namespace Appotara.Components.Pages
         private void ValidatePath()
         {
             OnSelectedAppsValidate.InvokeAsync(selectedApps);
+            CloseSelector();
         }
 
         private async Task ShowModal()
@@ -156,7 +159,7 @@ namespace Appotara.Components.Pages
 
         private void CloseSelector()
         {
-            IsVisible = false;
+            OnClosed.InvokeAsync();
         }
 
         private string turnImageToByteArray(System.Drawing.Icon img)

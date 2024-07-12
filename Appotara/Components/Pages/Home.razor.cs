@@ -13,7 +13,7 @@ namespace Appotara.Components.Pages
     public partial class Home
     {
         [Inject]
-        IJSRuntime JSRuntime { get; set; }
+        IJSRuntime? JSRuntime { get; set; }
 
 
         string? shortcutName = "";
@@ -29,6 +29,11 @@ namespace Appotara.Components.Pages
         private void OpenAppSelector()
         {
             isSelectorVisible = true;
+        }
+
+        private void CloseAppSelector()
+        {
+            isSelectorVisible = false;
         }
 
         private void GetCreatedShortchuts()
@@ -67,7 +72,6 @@ namespace Appotara.Components.Pages
 
         private void ShowShortcutDetail(ShortcutCreated shortcut)
         {
-            Console.WriteLine(shortcut);
             shortcutName = shortcut.Name;
             selectedApps = shortcut.Apps;
         }

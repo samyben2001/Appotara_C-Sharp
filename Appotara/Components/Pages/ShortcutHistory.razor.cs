@@ -25,13 +25,14 @@ namespace Appotara.Components.Pages
             {
                 string fileName = $"{basePath}{dirPath}\\shortcutHistory.json";
                 string jsonString = File.ReadAllText(fileName);
+
                 allShortcuts = JsonSerializer.Deserialize<List<ShortcutCreated>>(jsonString)!;
             }
         }
 
         private void SeeShortcutDetail(ShortcutCreated shortcut)
         {
-            //TODO: need fix installed app show on click
+            //TODO: need fix: 
             OnSeeShortcutDetail.InvokeAsync(shortcut);
         }
     }
