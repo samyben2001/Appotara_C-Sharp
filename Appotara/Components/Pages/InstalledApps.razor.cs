@@ -106,8 +106,7 @@ namespace Appotara.Components.Pages
                 app.Path = result.FullPath;
                 app.Name = Path.GetFileNameWithoutExtension(result.FileName);
                 //check if path not already selected
-                //TODO: check on app.Path
-                if (!selectedApps.Contains(app))
+                if (selectedApps.FindIndex(a => a.Path == app.Path) == -1)
                 {
                     selectedApps.Add(app);
                     ValidatePath();

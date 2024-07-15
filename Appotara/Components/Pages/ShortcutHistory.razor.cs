@@ -32,7 +32,6 @@ namespace Appotara.Components.Pages
 
         private void SeeShortcutDetail(ShortcutCreated shortcut)
         {
-            //TODO: need fix: 
             OnSeeShortcutDetail.InvokeAsync(shortcut);
         }
     }

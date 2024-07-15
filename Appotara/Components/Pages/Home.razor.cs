@@ -20,8 +20,6 @@ namespace Appotara.Components.Pages
         bool isSelectorVisible = false;
 
         List<AppInfos> selectedApps = new List<AppInfos>();
-        List<string> createdShortchuts = new List<string>();
-
 
         string basePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         string dirPath = @"\bats";
@@ -36,21 +34,6 @@ namespace Appotara.Components.Pages
             isSelectorVisible = false;
         }
 
-        private void GetCreatedShortchuts()
-        {
-            string path = basePath + dirPath;
-
-            //check if "bats" directory is existing
-            if (Directory.Exists(path))
-            {
-                //get all files with .bat extension in directory
-                var ext = new List<string> { "bat" };
-                createdShortchuts = Directory
-                    .EnumerateFiles(path, "*.*", SearchOption.AllDirectories)
-                    .Where(s => ext.Contains(Path.GetExtension(s).TrimStart('.').ToLowerInvariant())).ToList();
-            }
-        }
-
         private void ReadFile(string filePath)
         {
             //Read the content of the file 
@@ -63,9 +46,13 @@ namespace Appotara.Components.Pages
             isSelectorVisible = false;
             apps.ForEach(app =>
             {
-                if (!selectedApps.Contains(app))
+                if (selectedApps.FindIndex(a => a.Path == app.Path) == -1)
                 {
                     selectedApps.Add(app);
+                }
+                else
+                {
+                    toastService.ShowError("You have already select this application");
                 }
             });
         }
@@ -73,7 +60,7 @@ namespace Appotara.Components.Pages
         private void ShowShortcutDetail(ShortcutCreated shortcut)
         {
             shortcutName = shortcut.Name;
-            selectedApps = shortcut.Apps;
+            selectedApps = shortcut.Apps.ToList();
         }
 
         //remove path from list
@@ -101,8 +88,8 @@ namespace Appotara.Components.Pages
             finally { }
         }
 
-        //create batch file
-        private void CreateFile(string path, object content)
+        //create Batch or Json file
+        private bool CreateFile(string path, object content)
         {
             try
             {
@@ -117,6 +104,8 @@ namespace Appotara.Components.Pages
                     {
                         sw.WriteLine(content);
                     }
+
+                    return true;
                 }
                 else
                 {
@@ -124,18 +113,25 @@ namespace Appotara.Components.Pages
                     {
                         string jsonString = File.ReadAllText(path);
                         List<ShortcutCreated> allShortcuts = JsonSerializer.Deserialize<List<ShortcutCreated>>(jsonString)!;
-                        allShortcuts.AddRange((List<ShortcutCreated>)content);
+                        allShortcuts.AddRange((List<ShortcutCreated>)content); //Add new shortcut to list
 
                         using (StreamWriter sw = File.CreateText(path))
                         {
-                            sw.WriteLine(JsonSerializer.Serialize(allShortcuts));
+                            sw.WriteLine(JsonSerializer.Serialize(allShortcuts)); // Write json file with the new app
+                            return true;
                         }
+                    }
+                    else
+                    {
+                        toastService.ShowError("You already have a shortcut with this name");
+                        return false;
                     }
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine("The process failed: {0}", e.ToString());
+                return false;
             }
             finally { }
         }
@@ -152,37 +148,40 @@ namespace Appotara.Components.Pages
 
             //create directory and batch file
             CreateDir(basePath + dirPath);
-            CreateFile(basePath + dirPath + @$"\{shortcutName}.bat", batchScript);
-            try
+            bool isFileCreated =  CreateFile(basePath + dirPath + @$"\{shortcutName}.bat", batchScript);
+
+            if (isFileCreated)
             {
-                //Create shortcut on desktop to batch file
-                object shDesktop = (object)"Desktop";
-                WshShell shell = new WshShell();
-                string shortcutAddress = (string)shell.SpecialFolders.Item(ref shDesktop) + @$"\{shortcutName}.lnk";
-                IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
-                shortcut.Description = "";
-                shortcut.TargetPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + dirPath + @$"\{shortcutName}.bat";
-                shortcut.Save();
+                try
+                {
+                    //Create shortcut on desktop to batch file
+                    object shDesktop = (object)"Desktop";
+                    WshShell shell = new WshShell();
+                    string shortcutAddress = (string)shell.SpecialFolders.Item(ref shDesktop) + @$"\{shortcutName}.lnk";
+                    IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
+                    shortcut.Description = "";
+                    shortcut.TargetPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + dirPath + @$"\{shortcutName}.bat";
+                    shortcut.Save();
 
-                ShortcutCreated shortcutCreated = new ShortcutCreated();
-                shortcutCreated.Name = shortcutName!;
-                shortcutCreated.Apps = selectedApps;
-                shortcutCreated.BatchScript = batchScript;
+                    ShortcutCreated shortcutCreated = new ShortcutCreated();
+                    shortcutCreated.Name = shortcutName!;
+                    shortcutCreated.Apps = selectedApps;
+                    shortcutCreated.BatchScript = batchScript;
 
-                List<ShortcutCreated> shortcutCreatedList = [shortcutCreated];
-                CreateFile(basePath + dirPath + @$"\shortcutHistory.json", shortcutCreatedList);
+                    List<ShortcutCreated> shortcutCreatedList = [shortcutCreated];
+                    CreateFile(basePath + dirPath + @$"\shortcutHistory.json", shortcutCreatedList);
 
-                shortcutName = "";
-                selectedApps = new List<AppInfos>();
+                    shortcutName = "";
+                    selectedApps = new List<AppInfos>();
 
-                toastService.ShowSuccess("Shortcut created on Desktop");
+                    toastService.ShowSuccess("Shortcut created on Desktop");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("The process failed: {0}", e.ToString());
+                }
             }
-            catch (Exception e)
-            {
-                Console.WriteLine("The process failed: {0}", e.ToString());
-            }
-            finally { }
+
         }
-
     }
 }
