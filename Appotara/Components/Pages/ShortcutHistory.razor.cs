@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using File = System.IO.File;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -38,7 +39,19 @@ namespace Appotara.Components.Pages
 
         private void SeeShortcutDetail(ShortcutCreated shortcut)
         {
+            
             OnSeeShortcutDetail.InvokeAsync(shortcut);
+
+        }
+
+        private void RemoveShortcutFromHistory(ShortcutCreated shortcut)
+        {
+            allShortcuts.Remove(shortcut);
+
+            using (StreamWriter sw = File.CreateText($"{basePath}{dirPath}\\shortcutHistory.json"))
+            {
+                sw.WriteLine(JsonSerializer.Serialize(allShortcuts));
+            }
         }
     }
 }

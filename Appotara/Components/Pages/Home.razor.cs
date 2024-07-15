@@ -35,13 +35,6 @@ namespace Appotara.Components.Pages
             isSelectorVisible = false;
         }
 
-        private void ReadFile(string filePath)
-        {
-            //Read the content of the file 
-            //TODO: check if the shortcut not already exist in the list
-            string readText = System.IO.File.ReadAllText(filePath);
-        }
-
         private void HandleSelectedApps(List<AppInfos> apps)
         {
             isSelectorVisible = false;
