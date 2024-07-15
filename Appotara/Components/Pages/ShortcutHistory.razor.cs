@@ -52,6 +52,9 @@ namespace Appotara.Components.Pages
             {
                 sw.WriteLine(JsonSerializer.Serialize(allShortcuts));
             }
+
+            toastService.ShowSuccess("Shortcut removed from history");
+            //TODO: remove .bat file if existing after removed from history
         }
     }
 }
