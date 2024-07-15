@@ -14,7 +14,8 @@ namespace Appotara.Components.Pages
     {
         string basePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         string dirPath = @"\bats";
-        List<ShortcutCreated> allShortcuts = new List<ShortcutCreated>();
+
+        public List<ShortcutCreated> allShortcuts = new List<ShortcutCreated>();
 
         [Parameter]
         public EventCallback<ShortcutCreated> OnSeeShortcutDetail { get; set; }
@@ -28,6 +29,11 @@ namespace Appotara.Components.Pages
 
                 allShortcuts = JsonSerializer.Deserialize<List<ShortcutCreated>>(jsonString)!;
             }
+        }
+
+        public void AddShortchut(ShortcutCreated shortcut)
+        {
+            allShortcuts.Add(shortcut);
         }
 
         private void SeeShortcutDetail(ShortcutCreated shortcut)

@@ -15,6 +15,7 @@ namespace Appotara.Components.Pages
         [Inject]
         IJSRuntime? JSRuntime { get; set; }
 
+        ShortcutHistory? shortcutHistory;
 
         string? shortcutName = "";
         bool isSelectorVisible = false;
@@ -93,33 +94,16 @@ namespace Appotara.Components.Pages
         {
             try
             {
-                if (!File.Exists(path))
+                if (!path.Contains(".json"))
                 {
-                    if (path.Contains(".json"))
+                    if (!File.Exists(path))
                     {
-                        content = JsonSerializer.Serialize((List<ShortcutCreated>)content);
-                    }
-                    // Create a file to write to.
-                    using (StreamWriter sw = File.CreateText(path))
-                    {
-                        sw.WriteLine(content);
-                    }
-
-                    return true;
-                }
-                else
-                {
-                    if (path.Contains(".json"))
-                    {
-                        string jsonString = File.ReadAllText(path);
-                        List<ShortcutCreated> allShortcuts = JsonSerializer.Deserialize<List<ShortcutCreated>>(jsonString)!;
-                        allShortcuts.AddRange((List<ShortcutCreated>)content); //Add new shortcut to list
-
                         using (StreamWriter sw = File.CreateText(path))
                         {
-                            sw.WriteLine(JsonSerializer.Serialize(allShortcuts)); // Write json file with the new app
-                            return true;
+                            sw.WriteLine(content);
                         }
+
+                        return true;
                     }
                     else
                     {
@@ -127,13 +111,22 @@ namespace Appotara.Components.Pages
                         return false;
                     }
                 }
+                else
+                {
+                    using (StreamWriter sw = File.CreateText(path))
+                    {
+                        sw.WriteLine(JsonSerializer.Serialize(shortcutHistory!.allShortcuts));
+                    }
+
+                    return true;
+                }
+
             }
             catch (Exception e)
             {
                 Console.WriteLine("The process failed: {0}", e.ToString());
                 return false;
             }
-            finally { }
         }
 
         private void CreateShortcut()
@@ -168,8 +161,9 @@ namespace Appotara.Components.Pages
                     shortcutCreated.Apps = selectedApps;
                     shortcutCreated.BatchScript = batchScript;
 
-                    List<ShortcutCreated> shortcutCreatedList = [shortcutCreated];
-                    CreateFile(basePath + dirPath + @$"\shortcutHistory.json", shortcutCreatedList);
+                    //Add shortcut to list of All created shortcuts
+                    shortcutHistory!.AddShortchut(shortcutCreated);
+                    CreateFile(basePath + dirPath + @$"\shortcutHistory.json", shortcutHistory!.allShortcuts);
 
                     shortcutName = "";
                     selectedApps = new List<AppInfos>();
